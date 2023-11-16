@@ -54,9 +54,17 @@ public class Pokemon {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne()
     @JoinColumn(name = "trainer_id", referencedColumnName = "id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private Trainer trainer;
+
+    public Integer getTrainerId(){
+        if(trainer != null){
+            return trainer.getId();
+        }
+        return null;
+    }
 }

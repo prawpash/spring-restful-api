@@ -2,8 +2,10 @@ package com.pasha.PokemonTrainers.controller;
 
 import java.util.List;
 
+import com.pasha.PokemonTrainers.dto.PokemonResponseDto;
 import com.pasha.PokemonTrainers.dto.ResponseDto;
 import com.pasha.PokemonTrainers.dto.UpdateTrainerDto;
+import com.pasha.PokemonTrainers.service.PokemonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,9 +26,11 @@ import jakarta.validation.Valid;
 @RequestMapping(path = "/api/v1/trainers")
 public class TrainerController {
     private final TrainerService trainerService;
+    private final PokemonService pokemonService;
 
-    TrainerController(TrainerService trainerService){
+    TrainerController(TrainerService trainerService, PokemonService pokemonService){
         this.trainerService = trainerService;
+        this.pokemonService = pokemonService;
     }
 
     @GetMapping("")
@@ -39,6 +43,12 @@ public class TrainerController {
     public ResponseDto<TrainerDto> getTrainerById(@PathVariable("id") Integer id){
         TrainerDto trainer = trainerService.findTrainerById(id);
         return ResponseDto.<TrainerDto>builder().data(trainer).build();
+    }
+
+    @GetMapping("/{id}/pokemons")
+    public ResponseDto<List<PokemonResponseDto>> getTrainerPokemons(@PathVariable("id") Integer id){
+        List<PokemonResponseDto> pokemons = pokemonService.findPokemonByTrainerId(id);
+        return ResponseDto.<List<PokemonResponseDto>>builder().data(pokemons).build();
     }
 
     @PostMapping("")

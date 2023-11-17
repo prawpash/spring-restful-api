@@ -2,6 +2,9 @@ package com.pasha.PokemonTrainers.controller;
 
 import java.util.List;
 
+import com.pasha.PokemonTrainers.dto.ResponseDto;
+import com.pasha.PokemonTrainers.dto.UpdateTrainerDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,31 +30,33 @@ public class TrainerController {
     }
 
     @GetMapping("")
-    public List<TrainerDto> getAllTrainer(){
-        return trainerService.findAllTrainers();
+    public ResponseDto<List<TrainerDto>> getAllTrainer(){
+        List<TrainerDto> trainers= trainerService.findAllTrainers();
+        return ResponseDto.<List<TrainerDto>>builder().data(trainers).build();
     }
 
     @GetMapping("/{id}")
-    public TrainerDto getTrainerById(@PathVariable("id") Integer id){
-        return trainerService.findTrainerById(id);
+    public ResponseDto<TrainerDto> getTrainerById(@PathVariable("id") Integer id){
+        TrainerDto trainer = trainerService.findTrainerById(id);
+        return ResponseDto.<TrainerDto>builder().data(trainer).build();
     }
 
     @PostMapping("")
-    public TrainerDto storeTrainer(@Valid @RequestBody TrainerDto trainerDto){
+    public ResponseDto<TrainerDto> storeTrainer(@Valid @RequestBody TrainerDto trainerDto){
         TrainerDto trainer = trainerService.storeTrainer(trainerDto);
-        return trainer;
+        return ResponseDto.<TrainerDto>builder().data(trainer).build();
     }
 
     @PutMapping("/{id}")
-    public TrainerDto updateTrainer(@Valid @RequestBody TrainerDto trainerDto, @PathVariable("id") Integer id){
+    public ResponseDto<UpdateTrainerDto> updateTrainer(@Valid @RequestBody UpdateTrainerDto trainerDto, @PathVariable("id") Integer id){
         trainerDto.setId(id);
-        TrainerDto trainer = trainerService.updateTrainer(trainerDto);
-        return trainer;
+        return ResponseDto.<UpdateTrainerDto>builder().data(trainerService.updateTrainer(trainerDto)).build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTrainer(@PathVariable("id") Integer id){
+    public ResponseEntity<ResponseDto<String>> deleteTrainer(@PathVariable("id") Integer id){
         trainerService.deleteTrainerById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT).body(ResponseDto.<String>builder().data("ok").build());
     }
 }

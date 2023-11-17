@@ -2,10 +2,7 @@ package com.pasha.PokemonTrainers.model;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -29,6 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Entity
+@DynamicUpdate
 @Table(name = "pokemons")
 public class Pokemon {
 

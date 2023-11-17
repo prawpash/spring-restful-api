@@ -12,6 +12,8 @@ public interface PokemonService {
 
     PokemonResponseDto findPokemonById(Integer id);
 
+    List<PokemonResponseDto> findPokemonByTrainerId(Integer id);
+
     PokemonResponseDto storePokemon(InputPokemonDto pokemonDto);
 
     PokemonResponseDto updatePokemon(UpdatePokemonDto pokemonDto);

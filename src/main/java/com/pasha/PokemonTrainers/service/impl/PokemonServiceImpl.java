@@ -93,6 +93,13 @@ public class PokemonServiceImpl implements PokemonService{
     }
 
     @Override
+    public List<PokemonResponseDto> findPokemonByTrainerId(Integer id) {
+        List<Pokemon> pokemons = pokemonRepository
+                .findByTrainerId(id);
+        return pokemons.stream().map(this::mapToPokemonResponse).collect(Collectors.toList());
+    }
+
+    @Override
     public PokemonResponseDto updatePokemon(UpdatePokemonDto pokemonDto) {
         Pokemon pokemon = pokemonRepository.findById(pokemonDto.getId())
                 .orElseThrow(() ->new ResponseStatusException(

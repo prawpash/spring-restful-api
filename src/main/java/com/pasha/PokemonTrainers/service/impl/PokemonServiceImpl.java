@@ -1,8 +1,12 @@
 package com.pasha.PokemonTrainers.service.impl;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.pasha.PokemonTrainers.dto.InputPokemonDto;
+import com.pasha.PokemonTrainers.dto.PokemonResponseDto;
+import com.pasha.PokemonTrainers.dto.UpdatePokemonDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -36,6 +40,17 @@ public class PokemonServiceImpl implements PokemonService{
             .build();
     }
 
+    private PokemonResponseDto mapToPokemonResponse(Pokemon pokemon){
+        return PokemonResponseDto.builder()
+                .id(pokemon.getId())
+                .name(pokemon.getName())
+                .ability(pokemon.getAbility())
+                .createdAt(pokemon.getCreatedAt())
+                .updatedAt(pokemon.getUpdatedAt())
+                .trainer_id(pokemon.getTrainer().getId())
+                .build();
+    }
+
     private Pokemon mapToPokemon(PokemonDto pokemonDto){
         return Pokemon.builder()
             .id(pokemonDto.getId())
@@ -48,37 +63,68 @@ public class PokemonServiceImpl implements PokemonService{
     }
 
     @Override
-    public List<PokemonDto> findAllPokemons() {
+    public List<PokemonResponseDto> findAllPokemons() {
         List<Pokemon> pokemons = pokemonRepository.findAll();
-        return pokemons.stream().map(this::mapToPokemonDto).collect(Collectors.toList());
+        return pokemons.stream().map(this::mapToPokemonResponse).collect(Collectors.toList());
     }
 
     @Override
-    public PokemonDto storePokemon(PokemonDto pokemonDto) {
+    public PokemonResponseDto storePokemon(InputPokemonDto pokemonDto) {
         Trainer trainer = trainerRepository.findById(pokemonDto.getTrainer_id())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trainer with id: " + pokemonDto.getTrainer_id() + " is not found"));
-        
-        pokemonDto.setTrainer(trainer);
-        Pokemon pokemon = pokemonRepository.save(mapToPokemon(pokemonDto));
-        return mapToPokemonDto(pokemon);
+
+        Pokemon mapToPokemon = Pokemon.builder()
+                .name(pokemonDto.getName())
+                .ability(pokemonDto.getAbility())
+                .trainer(trainer)
+                .build();
+
+        Pokemon pokemon = pokemonRepository.save(mapToPokemon);
+
+        return mapToPokemonResponse(pokemon);
     }
 
     @Override
-    public PokemonDto findPokemonById(Integer id) {
+    public PokemonResponseDto findPokemonById(Integer id) {
        Pokemon pokemon = pokemonRepository.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pokemon with id: " + id + " is not found"));
        
-       return mapToPokemonDto(pokemon);
+       return mapToPokemonResponse(pokemon);
     }
 
     @Override
-    public PokemonDto updatePokemon(PokemonDto pokemonDto) {
-        Pokemon pokemon = pokemonRepository.save(mapToPokemon(pokemonDto));
-        return mapToPokemonDto(pokemon);
+    public PokemonResponseDto updatePokemon(UpdatePokemonDto pokemonDto) {
+        Pokemon pokemon = pokemonRepository.findById(pokemonDto.getId())
+                .orElseThrow(() ->new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Pokemon with id: " + pokemonDto.getId() + " is not found"));
+
+        if(Objects.nonNull(pokemonDto.getName())){
+            pokemon.setName(pokemonDto.getName());
+        }
+
+        if(Objects.nonNull(pokemonDto.getAbility())){
+            pokemon.setAbility(pokemonDto.getAbility());
+        }
+
+        if(Objects.nonNull(pokemonDto.getTrainer_id())){
+            Trainer trainer = trainerRepository.findById(pokemonDto.getTrainer_id())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trainer with id: " + pokemonDto.getTrainer_id() + " is not found"));
+
+            pokemon.setTrainer(trainer);
+        }
+
+        pokemonRepository.save(pokemon);
+        return mapToPokemonResponse(pokemon);
     }
 
     @Override
     public void deletePokemonById(Integer id) {
+        Pokemon pokemon = pokemonRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Pokemon with id: " + id + " is not found"
+                ));
         pokemonRepository.deleteById(id);
     }
 }

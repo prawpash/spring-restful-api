@@ -2,16 +2,19 @@ package com.pasha.PokemonTrainers.service;
 
 import java.util.List;
 
+import com.pasha.PokemonTrainers.dto.InputPokemonDto;
 import com.pasha.PokemonTrainers.dto.PokemonDto;
+import com.pasha.PokemonTrainers.dto.PokemonResponseDto;
+import com.pasha.PokemonTrainers.dto.UpdatePokemonDto;
 
 public interface PokemonService {
-    List<PokemonDto> findAllPokemons();
+    List<PokemonResponseDto> findAllPokemons();
 
-    PokemonDto findPokemonById(Integer id);
+    PokemonResponseDto findPokemonById(Integer id);
 
-    PokemonDto storePokemon(PokemonDto pokemonDto);
+    PokemonResponseDto storePokemon(InputPokemonDto pokemonDto);
 
-    PokemonDto updatePokemon(PokemonDto pokemonDto);
+    PokemonResponseDto updatePokemon(UpdatePokemonDto pokemonDto);
 
     void deletePokemonById(Integer id);
 }

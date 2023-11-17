@@ -2,6 +2,8 @@ package com.pasha.PokemonTrainers.controller;
 
 import java.util.List;
 
+import com.pasha.PokemonTrainers.dto.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.pasha.PokemonTrainers.dto.PokemonDto;
 import com.pasha.PokemonTrainers.service.PokemonService;
 
 import jakarta.validation.Valid;
@@ -27,32 +28,40 @@ public class PokemonController {
     }
 
     @GetMapping("")
-    public List<PokemonDto> getAllPokemon(){
-        return pokemonService.findAllPokemons();
+    public ResponseDto<List<PokemonResponseDto>> getAllPokemon(){
+        List<PokemonResponseDto> pokemons = pokemonService.findAllPokemons();
+        return ResponseDto.<List<PokemonResponseDto>>builder().data(pokemons).build();
     }
 
     @GetMapping("/{id}")
-    public PokemonDto getPokemonById(@PathVariable("id") Integer id){
-        return pokemonService.findPokemonById(id);
+    public ResponseDto<PokemonResponseDto> getPokemonById(@PathVariable("id") Integer id){
+        PokemonResponseDto pokemon = pokemonService.findPokemonById(id);
+        return ResponseDto.<PokemonResponseDto>builder().data(pokemon).build();
     }
 
     @PostMapping("")
-    public PokemonDto storePokemon(@Valid @RequestBody PokemonDto pokemonDto){
-        PokemonDto pokemon = pokemonService.storePokemon(pokemonDto);
-        return pokemon;
+    public ResponseDto<PokemonResponseDto> storePokemon(@Valid @RequestBody InputPokemonDto pokemonDto){
+        PokemonResponseDto pokemon = pokemonService.storePokemon(pokemonDto);
+        return ResponseDto.<PokemonResponseDto>builder()
+                .data(pokemon)
+                .build();
     }
 
     @PutMapping("/{id}")
-    public PokemonDto updatePokemon(@Valid @RequestBody PokemonDto pokemonDto, @PathVariable("id") Integer id){
+    public ResponseDto<PokemonResponseDto> updatePokemon(@Valid @RequestBody UpdatePokemonDto pokemonDto, @PathVariable("id") Integer id){
         pokemonDto.setId(id);
-        PokemonDto pokemon = pokemonService.updatePokemon(pokemonDto);
-        return pokemon;
+        PokemonResponseDto pokemon = pokemonService.updatePokemon(pokemonDto);
+        return ResponseDto.<PokemonResponseDto>builder()
+                .data(pokemon)
+                .build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePokemon(@PathVariable("id") Integer id){
+    public ResponseEntity<ResponseDto<String>> deletePokemon(@PathVariable("id") Integer id){
         pokemonService.deletePokemonById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body(ResponseDto.<String>builder().data("ok").build());
     }
 
 }

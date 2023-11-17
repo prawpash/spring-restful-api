@@ -2,22 +2,12 @@ package com.pasha.PokemonTrainers.controller;
 
 import java.util.List;
 
-import com.pasha.PokemonTrainers.dto.PokemonResponseDto;
-import com.pasha.PokemonTrainers.dto.ResponseDto;
-import com.pasha.PokemonTrainers.dto.UpdateTrainerDto;
+import com.pasha.PokemonTrainers.dto.*;
 import com.pasha.PokemonTrainers.service.PokemonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.pasha.PokemonTrainers.dto.TrainerDto;
 import com.pasha.PokemonTrainers.service.TrainerService;
 
 import jakarta.validation.Valid;
@@ -46,8 +36,20 @@ public class TrainerController {
     }
 
     @GetMapping("/{id}/pokemons")
-    public ResponseDto<List<PokemonResponseDto>> getTrainerPokemons(@PathVariable("id") Integer id){
-        List<PokemonResponseDto> pokemons = pokemonService.findPokemonByTrainerId(id);
+    public ResponseDto<List<PokemonResponseDto>> getTrainerPokemons(
+            @PathVariable("id") Integer id,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "ability", required = false) String ability,
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size
+    ){
+        SearchPokemonDto searchPokemonDto = SearchPokemonDto.builder()
+                .name(name)
+                .ability(ability)
+                .page(page)
+                .size(size)
+                .build();
+        List<PokemonResponseDto> pokemons = pokemonService.findPokemonByTrainerIdAndSearch(id, searchPokemonDto);
         return ResponseDto.<List<PokemonResponseDto>>builder().data(pokemons).build();
     }
 

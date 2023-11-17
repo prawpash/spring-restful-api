@@ -2,10 +2,13 @@ package com.pasha.PokemonTrainers.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pasha.PokemonTrainers.dto.PokemonResponseDto;
 import com.pasha.PokemonTrainers.dto.ResponseDto;
 import com.pasha.PokemonTrainers.dto.TrainerDto;
 import com.pasha.PokemonTrainers.dto.UpdateTrainerDto;
+import com.pasha.PokemonTrainers.model.Pokemon;
 import com.pasha.PokemonTrainers.model.Trainer;
+import com.pasha.PokemonTrainers.repository.PokemonRepository;
 import com.pasha.PokemonTrainers.repository.TrainerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class TrainerControllerTest {
+    private final String API_ROOT="/api/v1/trainers";
     @Autowired
     private MockMvc mockMvc;
 
@@ -32,11 +36,15 @@ class TrainerControllerTest {
     private TrainerRepository trainerRepository;
 
     @Autowired
+    private PokemonRepository pokemonRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp(){
         trainerRepository.deleteAll();
+        pokemonRepository.deleteAll();
     }
 
     @Test
@@ -47,7 +55,7 @@ class TrainerControllerTest {
         trainerDto.setPassword("");
 
         mockMvc.perform(
-                post("/api/v1/trainers")
+                post(API_ROOT)
                         .accept(MediaType.APPLICATION_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(trainerDto))
@@ -69,7 +77,7 @@ class TrainerControllerTest {
         trainerDto.setPassword("passwordAsh");
 
         mockMvc.perform(
-                post("/api/v1/trainers")
+                post(API_ROOT)
                         .accept(MediaType.APPLICATION_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(trainerDto))
@@ -99,7 +107,7 @@ class TrainerControllerTest {
         trainerDto.setPassword("passwordAsh");
 
         mockMvc.perform(
-                post("/api/v1/trainers")
+                post(API_ROOT)
                         .accept(MediaType.APPLICATION_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(trainerDto))
@@ -122,7 +130,7 @@ class TrainerControllerTest {
         trainerRepository.save(trainer);
 
         mockMvc.perform(
-                get("/api/v1/trainers")
+                get(API_ROOT)
                         .accept(MediaType.APPLICATION_JSON_VALUE)
         ).andExpectAll(
                 status().isOk()
@@ -149,7 +157,7 @@ class TrainerControllerTest {
         trainerDto.setPassword("passwordAsh");
 
         mockMvc.perform(
-                get("/api/v1/trainers/" + trainer.getId())
+                get(API_ROOT + "/" + trainer.getId())
                         .accept(MediaType.APPLICATION_JSON_VALUE)
         ).andExpectAll(
                 status().isOk()
@@ -187,7 +195,7 @@ class TrainerControllerTest {
         trainerRepository.save(trainer);
 
         mockMvc.perform(
-                delete("/api/v1/trainers/" + trainer.getId())
+                delete(API_ROOT + "/" + trainer.getId())
                         .accept(MediaType.APPLICATION_JSON_VALUE)
         ).andExpectAll(
                 status().isNoContent()
@@ -227,7 +235,7 @@ class TrainerControllerTest {
         trainerDto.setName("James");
 
         mockMvc.perform(
-                put("/api/v1/trainers/" + trainer.getId())
+                put(API_ROOT + "/" + trainer.getId())
                         .accept(MediaType.APPLICATION_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(trainerDto))
@@ -282,7 +290,7 @@ class TrainerControllerTest {
         trainerDto.setUsername("ash");
 
         mockMvc.perform(
-                put("/api/v1/trainers/" + trainer2.getId())
+                put(API_ROOT + "/" + trainer2.getId())
                         .accept(MediaType.APPLICATION_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(trainerDto))
@@ -293,6 +301,39 @@ class TrainerControllerTest {
                     .readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
 
             assertNotNull(trainersResponse.getErrors());
+        });
+    }
+
+    @Test
+    void getTrainerPokemons() throws Exception {
+        Trainer trainer = new Trainer();
+        trainer.setName("Ash");
+        trainer.setUsername("ash");
+        trainer.setPassword("passwordAsh");
+        trainerRepository.save(trainer);
+
+        Pokemon pokemon = new Pokemon();
+        pokemon.setTrainer(trainer);
+        pokemon.setAbility("Overgrow");
+        pokemon.setName("Bulbasaur");
+        pokemonRepository.save(pokemon);
+
+        mockMvc.perform(
+                get(API_ROOT + "/" + trainer.getId() + "/pokemons")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            ResponseDto<List<PokemonResponseDto>> trainersResponse = objectMapper
+                    .readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
+            assertNull(trainersResponse.getErrors());
+            assertNotNull(trainersResponse.getData());
+            trainersResponse.getData().forEach(pokemonResponseDto -> {
+                assertEquals(pokemonResponseDto.getTrainer_id(), trainer.getId());
+                assertNotNull(pokemonResponseDto.getName());
+                assertNotNull(pokemonResponseDto.getAbility());
+            });
         });
     }
 }

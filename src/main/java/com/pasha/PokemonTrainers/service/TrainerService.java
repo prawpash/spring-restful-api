@@ -2,6 +2,7 @@ package com.pasha.PokemonTrainers.service;
 
 import java.util.List;
 import com.pasha.PokemonTrainers.dto.TrainerDto;
+import com.pasha.PokemonTrainers.dto.UpdateTrainerDto;
 
 public interface TrainerService {
     List<TrainerDto> findAllTrainers();
@@ -12,7 +13,7 @@ public interface TrainerService {
 
     TrainerDto storeTrainer(TrainerDto trainerDto);
 
-    TrainerDto updateTrainer(TrainerDto trainerDto);
+    UpdateTrainerDto updateTrainer(UpdateTrainerDto trainerDto);
 
     void deleteTrainerById(Integer id);
 }

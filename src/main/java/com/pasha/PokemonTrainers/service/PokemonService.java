@@ -2,10 +2,7 @@ package com.pasha.PokemonTrainers.service;
 
 import java.util.List;
 
-import com.pasha.PokemonTrainers.dto.InputPokemonDto;
-import com.pasha.PokemonTrainers.dto.PokemonDto;
-import com.pasha.PokemonTrainers.dto.PokemonResponseDto;
-import com.pasha.PokemonTrainers.dto.UpdatePokemonDto;
+import com.pasha.PokemonTrainers.dto.*;
 
 public interface PokemonService {
     List<PokemonResponseDto> findAllPokemons();
@@ -13,6 +10,8 @@ public interface PokemonService {
     PokemonResponseDto findPokemonById(Integer id);
 
     List<PokemonResponseDto> findPokemonByTrainerId(Integer id);
+
+    List<PokemonResponseDto> findPokemonByTrainerIdAndSearch(Integer id, SearchPokemonDto search);
 
     PokemonResponseDto storePokemon(InputPokemonDto pokemonDto);
 

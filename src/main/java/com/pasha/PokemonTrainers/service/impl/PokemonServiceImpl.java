@@ -1,17 +1,18 @@
 package com.pasha.PokemonTrainers.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.pasha.PokemonTrainers.dto.InputPokemonDto;
-import com.pasha.PokemonTrainers.dto.PokemonResponseDto;
-import com.pasha.PokemonTrainers.dto.UpdatePokemonDto;
+import com.pasha.PokemonTrainers.dto.*;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.pasha.PokemonTrainers.dto.PokemonDto;
 import com.pasha.PokemonTrainers.model.Pokemon;
 import com.pasha.PokemonTrainers.model.Trainer;
 import com.pasha.PokemonTrainers.repository.PokemonRepository;
@@ -93,10 +94,45 @@ public class PokemonServiceImpl implements PokemonService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PokemonResponseDto> findPokemonByTrainerId(Integer id) {
+        Trainer trainer = trainerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trainer with id: " + id + " is not found"));
+
         List<Pokemon> pokemons = pokemonRepository
                 .findByTrainerId(id);
         return pokemons.stream().map(this::mapToPokemonResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PokemonResponseDto> findPokemonByTrainerIdAndSearch(Integer id, SearchPokemonDto search) {
+        Trainer trainer = trainerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Trainer with id: " + id + " is not found"
+                ));
+
+        Specification<Pokemon> specification = (root, query, builder) -> {
+          List<Predicate> predicates = new ArrayList<>();
+          predicates.add(builder.equal(root.get("trainer"), trainer));
+
+          if(Objects.nonNull(search.getName())){
+              predicates.add(builder.like(builder.lower(root.get("name")), "%" + search.getName().toLowerCase() + "%"));
+          }
+
+          if(Objects.nonNull(search.getAbility())){
+              predicates.add(builder.like(root.get("ability"), "%" + search.getAbility() + "%"));
+          }
+
+          return query.where(predicates.toArray(new Predicate[]{})).getRestriction();
+        };
+
+        return pokemonRepository
+                .findAll(specification)
+                .stream()
+                .map(this::mapToPokemonResponse)
+                .toList();
     }
 
     @Override

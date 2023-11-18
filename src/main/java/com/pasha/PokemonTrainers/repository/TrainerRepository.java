@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface TrainerRepository extends JpaRepository<Trainer, Integer>{
-    Trainer findByUsername(String username);
+    Optional<Trainer> findByUsername(String username);
 
     @Query(value = "SELECT * FROM trainers t WHERE t.username = :username AND t.id != :id", nativeQuery = true)
     Optional<Trainer> findByUsernameExceptId(@Param("username") String username,@Param("id") Integer id);

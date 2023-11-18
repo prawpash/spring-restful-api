@@ -2,9 +2,11 @@ package com.pasha.PokemonTrainers.service.impl;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.pasha.PokemonTrainers.dto.UpdateTrainerDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import com.pasha.PokemonTrainers.repository.TrainerRepository;
 import com.pasha.PokemonTrainers.service.TrainerService;
 
 @Service
+@RequiredArgsConstructor
 public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerRepository trainerRepository;
@@ -60,6 +63,11 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = trainerRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trainer with id: " + id + " is not found"));
         return mapToTrainerDto(trainer);
+    }
+
+    @Override
+    public Optional<Trainer> findTrainerByUsername(String username) {
+        return trainerRepository.findByUsername(username);
     }
 
     @Override
@@ -123,8 +131,8 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     @Transactional(readOnly = true)
     public Boolean checkIfUsernameExists(String username) {
-       Trainer trainer = trainerRepository.findByUsername(username);
-       return trainer != null;
+       Optional<Trainer> trainer = trainerRepository.findByUsername(username);
+       return trainer.isPresent();
     }
     
 }

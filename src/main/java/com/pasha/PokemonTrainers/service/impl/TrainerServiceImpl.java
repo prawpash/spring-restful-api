@@ -5,10 +5,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.pasha.PokemonTrainers.dto.InputTrainerDto;
+import com.pasha.PokemonTrainers.dto.TrainerResponseDto;
 import com.pasha.PokemonTrainers.dto.UpdateTrainerDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,10 +26,7 @@ import com.pasha.PokemonTrainers.service.TrainerService;
 public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerRepository trainerRepository;
-    @Autowired
-    TrainerServiceImpl(TrainerRepository trainerRepository){
-        this.trainerRepository = trainerRepository;
-    }
+    private final PasswordEncoder passwordEncoder;
 
     private TrainerDto mapToTrainerDto(Trainer trainer){
         return TrainerDto.builder()
@@ -48,6 +48,16 @@ public class TrainerServiceImpl implements TrainerService {
             .createdAt(trainerDto.getCreatedAt())
             .updatedAt(trainerDto.getUpdatedAt())
             .build();
+    }
+
+    private TrainerResponseDto mapToTrainerResponse(Trainer trainer){
+        return TrainerResponseDto.builder()
+                .id(trainer.getId())
+                .username(trainer.getUsername())
+                .name(trainer.getName())
+                .createdAt(trainer.getCreatedAt())
+                .updatedAt(trainer.getUpdatedAt())
+                .build();
     }
 
     @Override
@@ -80,6 +90,23 @@ public class TrainerServiceImpl implements TrainerService {
 
         Trainer trainer = trainerRepository.save(mapToTrainer(trainerDto));
         return mapToTrainerDto(trainer);
+    }
+
+    @Override
+    public TrainerResponseDto storeTrainer(InputTrainerDto trainerDto) {
+        Boolean trainerUsernameExists = this.checkIfUsernameExists(trainerDto.getUsername());
+        if(trainerUsernameExists){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The trainer with username: " + trainerDto.getUsername() + " is already exists");
+        }
+
+        Trainer mapToTrainer = Trainer.builder()
+                .name(trainerDto.getName())
+                .username(trainerDto.getUsername())
+                .password(passwordEncoder.encode(trainerDto.getPassword()))
+                .build();
+
+        Trainer trainer = trainerRepository.save(mapToTrainer);
+        return mapToTrainerResponse(trainer);
     }
 
     @Override
